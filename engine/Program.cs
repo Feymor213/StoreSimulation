@@ -40,32 +40,63 @@ class Engine
         return true;
     }
 
-    void Tick()
+    void Tick(Random random)
     {
-
+        foreach (Customer customer in customers)
+        {
+            foreach (Product product in products)
+            {
+                if (!customer.cart.Contains(product) && random.Next(100) < customer.interests[product.id])
+            }
+        }
     }
 
     void Mainloop()
     {
-
+        Random random = new Random();
+        for (int i = 0; i < duration_days*duration_hours; i++)
+        {
+            Tick(random);
+        }
     }
 }
 
 struct OutputData
 {
     int timesVisited;
-    int timesBought;
+    int transactions;
+    int productsPurchased;
     int profits;
     int opCosts;
 }
 
 class Customer
 {
-    public Dictionary<int, float> interests; // ProductID -> interest
-    float impulsivity;
-    int patience;
+    public readonly Dictionary<int, float> interests; // ProductID -> interest
+    public readonly float impulsivity;
+    public readonly int patience;
 
-    public bool AreValidValues()
+    public Product[] cart;
+    public readonly Product[] ShoppingList;
+
+    public Customer(Dictionary<int, float> interests, float impulsivity, int patience)
+    {
+        if (!AreValidValues())
+        {
+            throw new ArgumentException("Invalid values provided for the customer instance");
+        }
+        this.interests = interests;
+        this.impulsivity = impulsivity;
+        this.patience = patience;
+        this.cart = [];
+    }
+
+    void SetShoppingList()
+    {
+
+    }
+
+    bool AreValidValues()
     {
         if (
             impulsivity < 0 || impulsivity > 1 ||
@@ -87,7 +118,9 @@ class Customer
 
 struct Checkout
 {
-    int id;
+    public readonly int id;
+    public readonly int humanCost; // Per hour
+    public readonly int technicalCost; // Per hour
 }
 
 struct Product
