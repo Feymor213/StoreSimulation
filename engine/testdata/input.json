@@ -1,5 +1,6 @@
 {
     "days": 5,
+    "CustomersPerHour": 10,
     "products": [
         {
             "id": 1,
@@ -67,6 +68,23 @@
                 "6": 0.4,
                 "7": 0.4
             }
+        }
+    ],
+    "checkouts": [
+        {
+            "capacity": 10,
+            "humanCost": 100,
+            "technicalCost": 100
+        },
+        {
+            "capacity": 10,
+            "humanCost": 100,
+            "technicalCost": 100
+        },
+        {
+            "capacity": 10,
+            "humanCost": 100,
+            "technicalCost": 100
         }
     ]
 }
