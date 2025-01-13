@@ -5,46 +5,64 @@
         {
             "id": 1,
             "name": "apple",
-            "price": 90
+            "price": 90,
+            "categoryID": 2
         },
         {
             "id": 2,
             "name": "orange",
-            "price": 100
+            "price": 100,
+            "categoryID": 2
         },
         {
             "id": 3,
             "name": "milk",
-            "price": 150
+            "price": 150,
+            "categoryID": 2
         },
         {
             "id": 4,
             "name": "pork",
-            "price": 250
+            "price": 250,
+            "categoryID": 2
         },
         {
             "id": 5,
             "name": "beef",
-            "price": 300
+            "price": 300,
+            "categoryID": 2
         },
         {
             "id": 6,
             "name": "tea",
-            "price": 120
+            "price": 120,
+            "categoryID": 2
         },
         {
             "id": 7,
             "name": "coffee",
-            "price": 140
+            "price": 140,
+            "categoryID": 2
+        }
+    ],
+    "categories": [
+        {
+            "id": 1,
+            "name": "dairy"
+        },
+        {
+            "id": 2,
+            "name": "normal"
         }
     ],
     "customers": [
         {
+            "id": 1,
             "name": "man",
             "frequency": 0.4,
             "impulsivity": 0.3,
             "patience": 40, 
-            "interests": {
+            "interestsProducts": {
                 "1": 0.1,
                 "2": 0.2,
                 "3": 0.7,
@@ -52,14 +70,19 @@
                 "5": 0.6,
                 "6": 0.3,
                 "7": 0.2
+            },
+            "interestsCategories": {
+                "1": 0.5,
+                "2": 0.9
             }
         },
         {
+            "id": 2,
             "name": "woman",
             "frequency": 0.6,
             "impulsivity": 0.1,
             "patience": 100, 
-            "interests": {
+            "interestsProducts": {
                 "1": 0.3,
                 "2": 0.5,
                 "3": 0.5,
@@ -67,24 +90,52 @@
                 "5": 0.5,
                 "6": 0.4,
                 "7": 0.4
+            },
+            "interestsCategories": {
+                "1": 0.3,
+                "2": 0.4
             }
         }
     ],
     "checkouts": [
         {
+            "id": 1,
             "capacity": 10,
             "humanCost": 100,
             "technicalCost": 100
         },
         {
+            "id": 2,
             "capacity": 10,
             "humanCost": 100,
             "technicalCost": 100
         },
         {
+            "id": 3,
             "capacity": 10,
             "humanCost": 100,
             "technicalCost": 100
         }
-    ]
+    ],
+    "calendar": {
+        "biases": {
+            "2": {
+                "productInterests": {
+                    "1": 0.5
+                },
+                "categoryInterests": {
+                    "2": 0.3
+                }
+            },
+            "4": {
+                "productInterests": {
+                    "4": 0.9,
+                    "6": 0.6
+                },
+                "categoryInterests": {
+                    "1": 0.7
+                }
+            }
+        }
+    }
 }
