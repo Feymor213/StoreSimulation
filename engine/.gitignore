@@ -1,4 +1,4 @@
 obj/
 bin/
 
-testdata/output.json
+src/testdata/output.json

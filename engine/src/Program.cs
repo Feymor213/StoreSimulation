@@ -6,10 +6,17 @@ class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-        string inputFile = "testdata/input.json";
-        string json = File.ReadAllText(inputFile);
-        SimulationData data = JsonConvert.DeserializeObject<SimulationData>(json) ?? throw new ArgumentNullException(nameof(json));
+        string jsonString;
+        if (args.Length > 0)
+        {
+            jsonString = args[0];
+        }
+        else
+        {
+            string inputFile = "testdata/input.json";
+            jsonString = File.ReadAllText(inputFile);
+        }
+        SimulationData data = JsonConvert.DeserializeObject<SimulationData>(jsonString) ?? throw new ArgumentNullException(nameof(jsonString));
 
         Engine engine = new Engine(data);
         engine.Mainloop();
