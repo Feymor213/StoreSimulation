@@ -1,5 +1,5 @@
 {
-    "days": 5,
+    "days": 2,
     "CustomersPerHour": 10,
     "products": [
         {
@@ -118,22 +118,17 @@
         }
     ],
     "calendar": {
-        "biases": {
-            "2": {
+        "deviations": {
+            "0": {
                 "productInterests": {
-                    "1": 0.5
-                },
-                "categoryInterests": {
-                    "2": 0.3
+                    "1": 0
                 }
             },
-            "4": {
+            "1": {
                 "productInterests": {
+                    "1": 0,
                     "4": 0.9,
                     "6": 0.6
-                },
-                "categoryInterests": {
-                    "1": 0.7
                 }
             }
         }

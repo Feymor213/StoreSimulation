@@ -1,13 +1,12 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Transactions;
+﻿using System.Reflection;
+using System.Security.Cryptography;
 using Newtonsoft.Json;
 
 class Program
 {
     public static void Main(string[] args)
     {
+        Console.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         string inputFile = "testdata/input.json";
         string json = File.ReadAllText(inputFile);
         SimulationData data = JsonConvert.DeserializeObject<SimulationData>(json) ?? throw new ArgumentNullException(nameof(json));
@@ -28,9 +27,9 @@ class SimulationData
     public ProductCategory[] Categories { get; }
     public CustomerType[] CustomerTypes { get; }
     public Checkout[] Checkouts { get; }
-    public BiasCalendar Calendar { get; }
+    public DeviationCalendar Calendar { get; }
 
-    public SimulationData(int days, int customersPerHour, Product[] products,ProductCategory[] categories , CustomerType[] customers, Checkout[] checkouts, BiasCalendar calendar)
+    public SimulationData(int days, int customersPerHour, Product[] products,ProductCategory[] categories , CustomerType[] customers, Checkout[] checkouts, DeviationCalendar calendar)
     {        
         Days = days > 0 ? days : throw new ArgumentException("Amount of days must be a positive number.");
         CustomersPerHour = customersPerHour > 0 ? customersPerHour : throw new ArgumentException("Customers per hour must be a positive number.");
@@ -81,32 +80,23 @@ class SimulationData
     }
 }
 
-class BiasCalendar
+class DeviationCalendar
 {
-    public Dictionary<int, Bias> Biases;
+    public Dictionary<int, Deviation> Deviations { get; }
 
-    public BiasCalendar(Dictionary<int, Bias> biases)
+    public DeviationCalendar(Dictionary<int, Deviation> deviations)
     {
-        Biases = biases;
+        Deviations = deviations;
     }
 }
-class Bias
+class Deviation
 {
     public Dictionary<int, float> ProductInterests { get; }
-    public Dictionary<int, float> CategoryInterests { get; }
 
-    public Bias(Dictionary<int, float> productInterests, Dictionary<int, float> categoryInterests)
+    public Deviation(Dictionary<int, float> productInterests)
     {
         ProductInterests = productInterests ?? throw new ArgumentNullException(nameof(productInterests));
-        CategoryInterests = categoryInterests ?? throw new ArgumentNullException(nameof(categoryInterests));
         foreach (float bias in ProductInterests.Values)
-        {
-            if (bias < 0 || bias > 1)
-            {
-                throw new ArgumentException($"Bias can't be less than 0 or more than 1. Got {bias} instead.");
-            }
-        }
-        foreach (float bias in CategoryInterests.Values)
         {
             if (bias < 0 || bias > 1)
             {
@@ -118,22 +108,13 @@ class Bias
 
 class Engine
 {
-    public enum DayOfWeek {
-        Monday = 1,
-        Tuesday = 2,
-        Wednesday = 3,
-        Thursday = 4,
-        Friday = 5,
-        Sunday = 6,
-        Saturday = 7
-    }
     readonly int durationDays;
     const int duration_hours = 8;
     readonly int customersPerHour;
     readonly Product[] products;
     readonly Checkout[] availableCheckouts;
     readonly CustomerType[] customerTypes;
-    readonly BiasCalendar calendar;
+    readonly DeviationCalendar calendar;
 
     List<Customer> activeCustomers = [];
 
@@ -158,16 +139,16 @@ class Engine
 
     void Tick(Random random) // 1 tick = 1 minute
     {
-        Bias bias = new Bias([], []);
-        if (calendar.Biases.Keys.Contains(currentDayN))
+        Deviation deviation = new Deviation([]);
+        if (calendar.Deviations.ContainsKey(currentDayN))
         {
-            bias = calendar.Biases[currentDayN];
+            deviation = calendar.Deviations[currentDayN];
         }
         // Spawn customer
         if (random.Next(100) < customersPerHour/0.6)
         {
-            CustomerType type = customerTypes[random.Next(customerTypes.Length)];
-            Customer newCustomer = new Customer(type, products, bias);
+            CustomerType type = CustomerType.SelectRandom(customerTypes, random);
+            Customer newCustomer = new Customer(type, products, deviation);
             activeCustomers.Add(newCustomer);
             outputData.timesVisited += 1;
             outputData.customerTypeOutput[newCustomer.CustomerTypeID].visits += 1;
@@ -199,6 +180,7 @@ class Engine
             Product takenProduct = customer.shoppingList.Pop();
             customer.cart.Push(takenProduct);
             outputData.productOutput[takenProduct.ID].soldByShoppingList += 1;
+            outputData.productOutput[takenProduct.ID].amountSold += 1;
 
             // Take another one by impulse
             if (random.Next(100) < customer.Impulsivity*100)
@@ -206,6 +188,7 @@ class Engine
                 // Take random product
                 customer.cart.Push(products[random.Next(products.Length)]);
                 outputData.productOutput[takenProduct.ID].soldByImpulse += 1;
+                outputData.productOutput[takenProduct.ID].amountSold += 1;
             }
 
             customer.cooldownToNextPurchase = 3; // 3 min
@@ -221,7 +204,7 @@ class Engine
             {
                 if (customer == checkout.queue[0]) {continue;} // Don't update time for the first customer (one being served right now)
                 customer.minutesInQueue += 1;
-                if (customer.minutesInQueue >= customer.Patience) {checkout.queue.Remove(customer);}
+                if (customer.minutesInQueue >= customer.Patience) {checkout.queue.Remove(customer);} // Customer leaves if his patience was exhausted
             }
 
             if (checkout.queue[0].cart.Count == 0)
@@ -242,7 +225,6 @@ class Engine
             outputData.profits += soldProduct.Price;
             outputData.customerTypeOutput[checkout.queue[0].CustomerTypeID].totalProfit += soldProduct.Price;
             outputData.customerTypeOutput[checkout.queue[0].CustomerTypeID].totalProductsPurchased += 1;
-            outputData.productOutput[soldProduct.ID].amountSold += 1;
             outputData.checkoutOutput[checkout.ID].profits += soldProduct.Price;
             outputData.productsPurchased += 1;
         }
@@ -251,10 +233,13 @@ class Engine
     public void Mainloop()
     {
         Random random = new Random();
-        for (int i = 0; i < durationDays*duration_hours*60; i++)
+        for (int i = 0; i < durationDays; i++)
         {
             currentDayN = i;
-            Tick(random);
+            for (int j = 0; j < duration_hours*60; j++)
+            {
+                Tick(random);
+            }
         }
         
         foreach (Checkout checkout in availableCheckouts)
@@ -341,14 +326,13 @@ class CustomerTypeOutput
 
 class CustomerType
 {
-    private Dictionary<int, float> interestsProducts;
-    private Dictionary<int, float> interestsCategories;
-
     public int ID { get; }
     public string Name { get; }
     public float Frequency { get; } // Value range: <0, 1>. How frequently the customer shows up.
     private Dictionary<int, float> interests = [];
     public Dictionary<int, float> Interests { get {return interests;} } // Keys - product IDs. Values - interest in the product in range <0, 1>.
+    public Dictionary<int, float> ProductInterests { get; }
+    public Dictionary<int, float> CategoryInterests { get; }
     public float Impulsivity { get; } // Value range: <0, 1>. Chance to buy the product impulsively.
     public int Patience { get; } // Minutes before leaving the store while standing in queue at the checkout
 
@@ -357,8 +341,8 @@ class CustomerType
         ID = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Frequency = frequency >= 0 && frequency <= 1 ? frequency : throw new ArgumentException("Frequency value must be in range between 0 and 1");
-        this.interestsProducts = interestsProducts ?? throw new ArgumentNullException(nameof(interestsProducts));
-        this.interestsCategories = interestsCategories ?? throw new ArgumentNullException(nameof(interestsCategories));
+        ProductInterests = interestsProducts ?? throw new ArgumentNullException(nameof(interestsProducts));
+        CategoryInterests = interestsCategories ?? throw new ArgumentNullException(nameof(interestsCategories));
         Impulsivity = impulsivity >= 0 && impulsivity <= 1 ? impulsivity : throw new ArgumentException("Impulsivity value must be in range between 0 and 1");
         Patience = patience >= 0 && patience <= 100 ? patience : throw new ArgumentException("Patience value must be in range between 0 and 100");
     }
@@ -369,15 +353,39 @@ class CustomerType
         Dictionary<int, float> newInterests = [];
         foreach (Product product in products)
         {
-            if (interestsProducts.ContainsKey(product.ID))
+            if (ProductInterests.ContainsKey(product.ID))
             {
-                newInterests[product.ID] = interestsProducts[product.ID];
+                newInterests[product.ID] = ProductInterests[product.ID];
                 continue;
             }
-            newInterests[product.ID] = interestsCategories[product.CategoryID];
+            newInterests[product.ID] = CategoryInterests[product.CategoryID];
         }
 
         interests = newInterests;
+    }
+
+    public static CustomerType SelectRandom(CustomerType[] customerTypes, Random random)
+    {
+        Dictionary<int, CustomerType> breakpoints = [];
+
+        int currentBreakPoint = 0;
+        int pointer = random.Next(100);
+        int selectedBreakpoint = int.MaxValue;
+
+        foreach (CustomerType customerType in customerTypes)
+        {
+            int newBreakpoint = currentBreakPoint+(int)(customerType.Frequency*100);
+            breakpoints[newBreakpoint] = customerType;
+            currentBreakPoint = newBreakpoint;
+
+            int distance = newBreakpoint - pointer;
+            if (distance >= 0 && distance < selectedBreakpoint)
+            {
+                selectedBreakpoint = newBreakpoint;
+            }
+        }
+
+        return breakpoints[selectedBreakpoint];
     }
 }
 
@@ -395,25 +403,25 @@ class Customer
     public int minutesInQueue = 0;
     public int timeInStore = 0;
 
-    public Customer(CustomerType customerType, Product[] availableProducts, Bias bias)
+    public Customer(CustomerType customerType, Product[] availableProducts, Deviation deviation)
     {
         Interests = customerType.Interests;
         Impulsivity = customerType.Impulsivity;
         Patience = customerType.Patience;
-        shoppingList = GenerateShoppingList(availableProducts, bias);
+        shoppingList = GenerateShoppingList(availableProducts, deviation);
         CustomerTypeID = customerType.ID;
     }
 
-    Stack<Product> GenerateShoppingList(Product[] availableProducts, Bias bias)
+    Stack<Product> GenerateShoppingList(Product[] availableProducts, Deviation deviation)
     {
         Stack<Product> list = [];
         Random random = new Random();
         foreach (Product product in availableProducts)
         {
             float interest = Interests[product.ID];
-            if (bias.ProductInterests.Keys.Contains(product.ID))
+            if (deviation.ProductInterests.Keys.Contains(product.ID))
             {
-                interest = bias.ProductInterests[product.ID];
+                interest = deviation.ProductInterests[product.ID];
             }
             if (random.Next(100) < interest*100) list.Push(product);
         }
