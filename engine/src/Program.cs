@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using System.Security.Cryptography;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 class Program
 {
@@ -21,8 +19,16 @@ class Program
         Engine engine = new Engine(data);
         engine.Mainloop();
 
-        string outputFile = "testdata/output.json";
-        File.WriteAllText(outputFile, JsonConvert.SerializeObject(engine.GetData()));
+        string output = JsonConvert.SerializeObject(engine.GetData());
+        if (args.Length > 0)
+        {
+            Console.WriteLine(output);
+        }
+        else
+        {
+            string outputFile = "testdata/output.json";
+            File.WriteAllText(outputFile, output);
+        }
     }
 }
 
@@ -116,7 +122,7 @@ class Deviation
 class Engine
 {
     readonly int durationDays;
-    const int duration_hours = 8;
+    const int durationHours = 8;
     readonly int customersPerHour;
     readonly Product[] products;
     readonly Checkout[] availableCheckouts;
@@ -243,7 +249,7 @@ class Engine
         for (int i = 0; i < durationDays; i++)
         {
             currentDayN = i;
-            for (int j = 0; j < duration_hours*60; j++)
+            for (int j = 0; j < durationHours*60; j++)
             {
                 Tick(random);
             }
@@ -251,9 +257,9 @@ class Engine
         
         foreach (Checkout checkout in availableCheckouts)
         {
-            outputData.opCosts += (checkout.HumanCost + checkout.TechnicalCost)*duration_hours*durationDays;
-            outputData.checkoutOutput[checkout.ID].humanCost += checkout.HumanCost*duration_hours*durationDays;
-            outputData.checkoutOutput[checkout.ID].technicalCost += checkout.TechnicalCost*duration_hours*durationDays;
+            outputData.opCosts += (checkout.HumanCost + checkout.TechnicalCost)*durationHours*durationDays;
+            outputData.checkoutOutput[checkout.ID].humanCost += checkout.HumanCost*durationHours*durationDays;
+            outputData.checkoutOutput[checkout.ID].technicalCost += checkout.TechnicalCost*durationHours*durationDays;
         }
     }
 }
