@@ -150,13 +150,8 @@ class Engine
         return outputData;
     }
 
-    void Tick(Random random) // 1 tick = 1 minute
+    void Tick(Random random, Deviation deviation) // 1 tick = 1 minute
     {
-        Deviation deviation = new Deviation([]);
-        if (calendar.Deviations.ContainsKey(currentDayN))
-        {
-            deviation = calendar.Deviations[currentDayN];
-        }
         // Spawn customer
         if (random.Next(100) < customersPerHour/0.6)
         {
@@ -249,9 +244,13 @@ class Engine
         for (int i = 0; i < durationDays; i++)
         {
             currentDayN = i;
+
+            Deviation deviation = new Deviation([]);
+            if (calendar.Deviations.ContainsKey(currentDayN)) deviation = calendar.Deviations[currentDayN];
+
             for (int j = 0; j < durationHours*60; j++)
             {
-                Tick(random);
+                Tick(random, deviation);
             }
         }
         
