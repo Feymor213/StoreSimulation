@@ -37,26 +37,20 @@ class SimulationData
     public int Days { get; }
     public int CustomersPerHour { get; }
     public Product[] Products { get; }
-    public ProductCategory[] Categories { get; }
     public CustomerType[] CustomerTypes { get; }
     public Checkout[] Checkouts { get; }
     public DeviationCalendar Calendar { get; }
 
-    public SimulationData(int days, int customersPerHour, Product[] products,ProductCategory[] categories , CustomerType[] customers, Checkout[] checkouts, DeviationCalendar calendar)
+    public SimulationData(int days, int customersPerHour, Product[] products, CustomerType[] customers, Checkout[] checkouts, DeviationCalendar calendar)
     {        
         Days = days > 0 ? days : throw new ArgumentException("Amount of days must be a positive number.");
         CustomersPerHour = customersPerHour > 0 ? customersPerHour : throw new ArgumentException("Customers per hour must be a positive number.");
         Products = products ?? throw new ArgumentNullException(nameof(products));
-        Categories = categories ?? throw new ArgumentNullException(nameof(categories));
         CustomerTypes = customers ?? throw new ArgumentNullException(nameof(customers));
         Checkouts = checkouts ?? throw new ArgumentNullException(nameof(checkouts));
         Calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
 
         CheckUniqueProductsID();
-        foreach (CustomerType customerType in CustomerTypes)
-        {
-            customerType.CompileInterests(Products);
-        }
         CheckCustomerTypes();
     }
 
@@ -93,29 +87,14 @@ class SimulationData
     }
 }
 
+class Deviations : Dictionary<int, float> {}
 class DeviationCalendar
 {
-    public Dictionary<int, Deviation> Deviations { get; }
+    public Dictionary<int, Deviations> Deviations { get; }
 
-    public DeviationCalendar(Dictionary<int, Deviation> deviations)
+    public DeviationCalendar(Dictionary<int, Deviations> deviations)
     {
         Deviations = deviations;
-    }
-}
-class Deviation
-{
-    public Dictionary<int, float> ProductInterests { get; }
-
-    public Deviation(Dictionary<int, float> productInterests)
-    {
-        ProductInterests = productInterests ?? throw new ArgumentNullException(nameof(productInterests));
-        foreach (float bias in ProductInterests.Values)
-        {
-            if (bias < 0 || bias > 1)
-            {
-                throw new ArgumentException($"Bias can't be less than 0 or more than 1. Got {bias} instead.");
-            }
-        }
     }
 }
 
@@ -150,13 +129,13 @@ class Engine
         return outputData;
     }
 
-    void Tick(Random random, Deviation deviation) // 1 tick = 1 minute
+    void Tick(Random random, Deviations deviations) // 1 tick = 1 minute
     {
         // Spawn customer
         if (random.Next(100) < customersPerHour/0.6)
         {
             CustomerType type = CustomerType.SelectRandom(customerTypes, random);
-            Customer newCustomer = new Customer(type, products, deviation);
+            Customer newCustomer = new Customer(type, products, deviations);
             activeCustomers.Add(newCustomer);
             outputData.timesVisited += 1;
             outputData.customerTypeOutput[newCustomer.CustomerTypeID].visits += 1;
@@ -245,12 +224,12 @@ class Engine
         {
             currentDayN = i;
 
-            Deviation deviation = new Deviation([]);
-            if (calendar.Deviations.ContainsKey(currentDayN)) deviation = calendar.Deviations[currentDayN];
+            Deviations deviations = [];
+            if (calendar.Deviations.ContainsKey(currentDayN)) deviations = calendar.Deviations[currentDayN];
 
             for (int j = 0; j < durationHours*60; j++)
             {
-                Tick(random, deviation);
+                Tick(random, deviations);
             }
         }
         
@@ -341,39 +320,18 @@ class CustomerType
     public int ID { get; }
     public string Name { get; }
     public float Frequency { get; } // Value range: <0, 1>. How frequently the customer shows up.
-    private Dictionary<int, float> interests = [];
-    public Dictionary<int, float> Interests { get {return interests;} } // Keys - product IDs. Values - interest in the product in range <0, 1>.
-    public Dictionary<int, float> ProductInterests { get; }
-    public Dictionary<int, float> CategoryInterests { get; }
+    public Dictionary<int, float> Interests { get ; } // Keys - product IDs. Values - interest in the product in range <0, 1>.
     public float Impulsivity { get; } // Value range: <0, 1>. Chance to buy the product impulsively.
     public int Patience { get; } // Minutes before leaving the store while standing in queue at the checkout
 
-    public CustomerType(int id, string name, float frequency, Dictionary<int, float> interestsProducts, Dictionary<int, float> interestsCategories, float impulsivity, int patience)
+    public CustomerType(int id, string name, float frequency, Dictionary<int, float> interests, float impulsivity, int patience)
     {
         ID = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Frequency = frequency >= 0 && frequency <= 1 ? frequency : throw new ArgumentException("Frequency value must be in range between 0 and 1");
-        ProductInterests = interestsProducts ?? throw new ArgumentNullException(nameof(interestsProducts));
-        CategoryInterests = interestsCategories ?? throw new ArgumentNullException(nameof(interestsCategories));
+        Interests = interests ?? throw new ArgumentNullException(nameof(interests));
         Impulsivity = impulsivity >= 0 && impulsivity <= 1 ? impulsivity : throw new ArgumentException("Impulsivity value must be in range between 0 and 1");
         Patience = patience >= 0 && patience <= 100 ? patience : throw new ArgumentException("Patience value must be in range between 0 and 100");
-    }
-
-    // Create a single interests dictinary out of two (product interest and category interests). Product interests are preferred.
-    public void CompileInterests(Product[] products)
-    {
-        Dictionary<int, float> newInterests = [];
-        foreach (Product product in products)
-        {
-            if (ProductInterests.ContainsKey(product.ID))
-            {
-                newInterests[product.ID] = ProductInterests[product.ID];
-                continue;
-            }
-            newInterests[product.ID] = CategoryInterests[product.CategoryID];
-        }
-
-        interests = newInterests;
     }
 
     public static CustomerType SelectRandom(CustomerType[] customerTypes, Random random)
@@ -415,25 +373,25 @@ class Customer
     public int minutesInQueue = 0;
     public int timeInStore = 0;
 
-    public Customer(CustomerType customerType, Product[] availableProducts, Deviation deviation)
+    public Customer(CustomerType customerType, Product[] availableProducts, Deviations deviations)
     {
         Interests = customerType.Interests;
         Impulsivity = customerType.Impulsivity;
         Patience = customerType.Patience;
-        shoppingList = GenerateShoppingList(availableProducts, deviation);
+        shoppingList = GenerateShoppingList(availableProducts, deviations);
         CustomerTypeID = customerType.ID;
     }
 
-    Stack<Product> GenerateShoppingList(Product[] availableProducts, Deviation deviation)
+    Stack<Product> GenerateShoppingList(Product[] availableProducts, Deviations deviations)
     {
         Stack<Product> list = [];
         Random random = new Random();
         foreach (Product product in availableProducts)
         {
             float interest = Interests[product.ID];
-            if (deviation.ProductInterests.Keys.Contains(product.ID))
+            if (deviations.ContainsKey(product.ID))
             {
-                interest = deviation.ProductInterests[product.ID];
+                interest = Math.Clamp(interest*deviations[product.ID], 0, 1);
             }
             if (random.Next(100) < interest*100) list.Push(product);
         }
@@ -472,41 +430,15 @@ class Checkout
     }
 }
 
-class ProductCategory
-{
-    public int ID { get; }
-    public string Name { get; }
-
-    public ProductCategory(int id, string name)
-    {
-        ID = id > 0 ? id : throw new ArgumentException($"ID must be a positive integer. Got {id} instead.");
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-    }
-
-    public static ProductCategory GetByID(ProductCategory[] categories, int id)
-    {
-        foreach (ProductCategory category in categories)
-        {
-            if (category.ID == id)
-            {
-                return category;
-            }
-        }
-        throw new ArgumentOutOfRangeException($"Category with id {id} does not exist");
-    }
-}
-
 struct Product
 {
     public int ID { get; }
     public string Name { get; }
     public int Price { get; }
-    public int CategoryID { get; }
-    public Product(int id, string name, int price, int categoryID)
+    public Product(int id, string name, int price)
     {
         ID = id > 0 ? id : throw new ArgumentException($"ID must be a positive integer. Got {id} instead.");
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Price = price > 0 ? price : throw new ArgumentException($"Price must be a positive integer. Got {price} instead.");
-        CategoryID = categoryID;
     }
 }
