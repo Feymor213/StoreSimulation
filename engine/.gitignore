@@ -1,4 +1,9 @@
+# local binaries
 obj/
 bin/
 
+# testdata
 src/testdata/output.json
+
+# build
+publish/

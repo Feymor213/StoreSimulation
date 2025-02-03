@@ -41,6 +41,7 @@ class SimulationData
     public Checkout[] Checkouts { get; }
     public DeviationCalendar Calendar { get; }
 
+    [JsonConstructor]
     public SimulationData(int days, int customersPerHour, Product[] products, CustomerType[] customers, Checkout[] checkouts, DeviationCalendar calendar)
     {        
         Days = days > 0 ? days : throw new ArgumentException("Amount of days must be a positive number.");
