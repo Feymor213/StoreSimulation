@@ -35,7 +35,7 @@ class Program
 class SimulationData
 {
     public int Days { get; }
-    public int CustomersPerHour { get; }
+    public int customersPerHour { get; }
     public Product[] Products { get; }
     public CustomerType[] CustomerTypes { get; }
     public Checkout[] Checkouts { get; }
@@ -45,7 +45,7 @@ class SimulationData
     public SimulationData(int days, int customersPerHour, Product[] products, CustomerType[] customers, Checkout[] checkouts, DeviationCalendar calendar)
     {        
         Days = days > 0 ? days : throw new ArgumentException("Amount of days must be a positive number.");
-        CustomersPerHour = customersPerHour > 0 ? customersPerHour : throw new ArgumentException("Customers per hour must be a positive number.");
+        this.customersPerHour = customersPerHour > 0 ? customersPerHour : throw new ArgumentException("Customers per hour must be a positive number.");
         Products = products ?? throw new ArgumentNullException(nameof(products));
         CustomerTypes = customers ?? throw new ArgumentNullException(nameof(customers));
         Checkouts = checkouts ?? throw new ArgumentNullException(nameof(checkouts));
@@ -117,7 +117,7 @@ class Engine
     public Engine(SimulationData data)
     {
         durationDays = data.Days;
-        customersPerHour = data.CustomersPerHour;
+        customersPerHour = data.customersPerHour;
         customerTypes = data.CustomerTypes;
         products = data.Products;
         availableCheckouts = data.Checkouts;

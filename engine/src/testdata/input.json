@@ -1,48 +1,41 @@
 {
     "days": 2,
-    "CustomersPerHour": 10,
+    "customersPerHour": 10,
     "products": [
         {
             "id": 1,
             "name": "apple",
-            "price": 90,
-            "categoryID": 2
+            "price": 90
         },
         {
             "id": 2,
             "name": "orange",
-            "price": 100,
-            "categoryID": 2
+            "price": 100
         },
         {
             "id": 3,
             "name": "milk",
-            "price": 150,
-            "categoryID": 2
+            "price": 150
         },
         {
             "id": 4,
             "name": "pork",
-            "price": 250,
-            "categoryID": 2
+            "price": 250
         },
         {
             "id": 5,
             "name": "beef",
-            "price": 300,
-            "categoryID": 2
+            "price": 300
         },
         {
             "id": 6,
             "name": "tea",
-            "price": 120,
-            "categoryID": 2
+            "price": 120
         },
         {
             "id": 7,
             "name": "coffee",
-            "price": 140,
-            "categoryID": 2
+            "price": 140
         }
     ],
     "customers": [
