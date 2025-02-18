@@ -1,26 +1,9 @@
-'use client';
+import { getAuthenticatedUser } from "@/lib/auth";
+import HomePage from "./homepage";
 
-import { Button } from "@/components/ui/button"
-import { useState } from "react";
-
-export default function Home() {
-
-  const [text, setText] = useState('Preview ');
-
-  async function RunSim() {
-    const response = await fetch('/api/sim/run', { // ✅ Corrected API path
-        method: 'POST',
-    });
-
-    const json = await response.json();
-    console.log(json);
-    setText(JSON.stringify(json.output));
-  }
+export default async function Home() {
 
   return (
-    <>
-      <Button variant="outline" onClick={() => RunSim()}>Run Sim</Button>
-      <p>{text}</p>
-    </>
+    <HomePage />
   );
 }
