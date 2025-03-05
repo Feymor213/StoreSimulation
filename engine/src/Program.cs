@@ -58,7 +58,7 @@ class SimulationData
     // If all have distinct IDs
     void CheckUniqueProductsID()
     {
-        List<int> encounteredIDs = [];
+        List<string> encounteredIDs = [];
         foreach (Product product in Products)
         {
             if (encounteredIDs.Contains(product.ID)) throw new ArgumentException($"Duplicate product ID: {product.ID}");
@@ -88,7 +88,7 @@ class SimulationData
     }
 }
 
-class Deviations : Dictionary<int, float> {}
+class Deviations : Dictionary<string, float> {}
 class DeviationCalendar
 {
     public Dictionary<int, Deviations> Deviations { get; }
@@ -252,9 +252,9 @@ class OutputData
     public int profits;
     public int opCosts;
 
-    public Dictionary<int, CheckoutOutput> checkoutOutput;
-    public Dictionary<int, ProductOutput> productOutput;
-    public Dictionary<int, CustomerTypeOutput> customerTypeOutput;
+    public Dictionary<string, CheckoutOutput> checkoutOutput;
+    public Dictionary<string, ProductOutput> productOutput;
+    public Dictionary<string, CustomerTypeOutput> customerTypeOutput;
 
     public OutputData(SimulationData data)
     {
@@ -318,14 +318,14 @@ class CustomerTypeOutput
 
 class CustomerType
 {
-    public int ID { get; }
+    public string ID { get; }
     public string Name { get; }
     public float Frequency { get; } // Value range: <0, 1>. How frequently the customer shows up.
-    public Dictionary<int, float> Interests { get ; } // Keys - product IDs. Values - interest in the product in range <0, 1>.
+    public Dictionary<string, float> Interests { get ; } // Keys - product IDs. Values - interest in the product in range <0, 1>.
     public float Impulsivity { get; } // Value range: <0, 1>. Chance to buy the product impulsively.
     public int Patience { get; } // Minutes before leaving the store while standing in queue at the checkout
 
-    public CustomerType(int id, string name, float frequency, Dictionary<int, float> interests, float impulsivity, int patience)
+    public CustomerType(string id, string name, float frequency, Dictionary<string, float> interests, float impulsivity, int patience)
     {
         ID = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -362,8 +362,8 @@ class CustomerType
 
 class Customer
 {
-    public int CustomerTypeID { get; }
-    public Dictionary<int, float> Interests { get; }
+    public string CustomerTypeID { get; }
+    public Dictionary<string, float> Interests { get; }
     public float Impulsivity { get; }
     public int Patience { get; }
     public Stack<Product> shoppingList;
@@ -402,13 +402,13 @@ class Customer
 
 class Checkout
 {
-    public int ID { get; }
+    public string ID { get; }
     public int Capacity { get; } // Customers per hour 
     public int HumanCost { get; } // Per hour
     public int TechnicalCost { get; } // Per hour
     public List<Customer> queue = [];
 
-    public Checkout(int id, int capacity, int humanCost, int technicalCost)
+    public Checkout(string id, int capacity, int humanCost, int technicalCost)
     {
         ID = id;
         Capacity = capacity > 0 ? capacity : throw new ArgumentException($"Checkout capacity value must be a positive integer. Got {capacity} instead.");
@@ -433,12 +433,12 @@ class Checkout
 
 struct Product
 {
-    public int ID { get; }
+    public string ID { get; }
     public string Name { get; }
     public int Price { get; }
-    public Product(int id, string name, int price)
+    public Product(string id, string name, int price)
     {
-        ID = id > 0 ? id : throw new ArgumentException($"ID must be a positive integer. Got {id} instead.");
+        ID = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Price = price > 0 ? price : throw new ArgumentException($"Price must be a positive integer. Got {price} instead.");
     }
