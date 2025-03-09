@@ -20,6 +20,9 @@ export default function Header({user}: {user: AuthRecord}) {
         <Link href="/create" className="text-gray-600 hover:text-gray-900">
           New Simulation
         </Link>
+        <Link href="/simulation" className="text-gray-600 hover:text-gray-900">
+          My Simulations
+        </Link>
       </nav>
     </div>
 

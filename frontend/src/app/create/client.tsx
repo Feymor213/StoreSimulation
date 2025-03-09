@@ -8,8 +8,11 @@ import { RecordModel } from "pocketbase";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { RunSimulation } from "./serveractions";
+import { useRouter } from "next/navigation";
 
 export default function CreateSimForm({products, customers, checkouts, ...props}: {products: RecordModel[], customers: RecordModel[], checkouts: RecordModel[]}) {
+  const router = useRouter();
 
   const formSchema = z.object({
     days: z.number().min(1),
@@ -22,9 +25,7 @@ export default function CreateSimForm({products, customers, checkouts, ...props}
       frequency: z.number().min(0).max(1),
     })),
 
-    checkouts: z.array(z.object({
-      checkoutID: z.string()
-    }))
+    checkouts: z.array(z.string())
   })
 
   const form = useForm({
@@ -38,7 +39,20 @@ export default function CreateSimForm({products, customers, checkouts, ...props}
     },
   });
 
-  const handleSubmit = async () => {};
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const isValid = await form.trigger();
+    if (isValid) {
+      const simData = await RunSimulation(data);
+      console.log(simData);
+      form.reset();
+      if (simData.success) {
+        router.push(`/simulation/${simData.created}`);
+      }
+      else {
+        router.refresh();
+      }
+    }
+  };
 
   const productsSelected = useWatch({
     control: form.control,
@@ -254,7 +268,7 @@ function AddCheckoutTypeForm({checkouts, ...props}: {checkouts: RecordModel[]}) 
   const handleAddCheckout = async () => {
     const isValid = await form.trigger();
     if (isValid) {
-      const newCheckout = form.getValues();
+      const newCheckout = form.getValues("checkoutID");
       const existingCheckouts = getValues("checkouts");
 
       setValue("checkouts", [...existingCheckouts, newCheckout]);

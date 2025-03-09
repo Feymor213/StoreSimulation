@@ -46,7 +46,7 @@ export function CreateCategoryForm({ ...props }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4 max-w-xl mt-8 mx-auto p-4 border border-gray-200 rounded-lg shadow-sm">
+      <form {...props} onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4 max-w-xl mt-8 mx-auto p-4 border border-gray-200 rounded-lg shadow-sm">
         <h2 className="text-lg font-semibold">Create New Category</h2>
         <FormField
           control={form.control}
