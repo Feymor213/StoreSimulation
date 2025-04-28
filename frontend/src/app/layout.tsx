@@ -1,3 +1,4 @@
+import React from 'react';
 import "./globals.css";
 import Header from "./header";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -14,7 +15,7 @@ export default function RootLayout({
   );
 }
 
-export async function Layout({ children }: { children: React.ReactNode }) {
+async function Layout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser();
 
   return (

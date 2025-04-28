@@ -1,12 +1,14 @@
+import React from 'react';
 import PocketBase, { RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from "@/lib/auth";
-import { DeleteCategoryButton, LoginText, CreateCategoryForm, CreateProductForm, CreateCheckoutForm } from './client';
+import { DeleteButton, LoginText, CreateCategoryForm, CreateProductForm, CreateCheckoutForm } from './client';
+import { DeleteCategory } from './serveractions';
 import { CreateCustomerForm } from './customersforms';
 import { CustomerData, interestsCategory, interestsProduct } from "@/lib/types"
 
 export default async function DashboardPage() {
   const pb = new PocketBase("http://127.0.0.1:8090");
-  await pb.collection("_superusers").authWithPassword("admin@admin.com", "adminadmin");
+  await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
   const user = await getAuthenticatedUser();
 
@@ -66,7 +68,7 @@ function Category(category: RecordModel, key: number) {
   return (
     <div className="bg-white flex justify-between items-center p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300" key={key}>
       <h3 className="text-xl font-semibold text-gray-700">{category.Name}</h3>
-      <DeleteCategoryButton id={category.id} inactive={category.default} />
+      <DeleteButton id={category.id} callback={DeleteCategory} inactive={category.default} />
     </div>
   );
 }
@@ -99,8 +101,9 @@ async function Customers({customers, pb, ...props}: {customers: RecordModel[], p
     // Fetch interests category and product data
     const interestsCategoryAll = await pb.collection("interestsCategory").getFullList();
     const interestsProductsAll = await pb.collection("interestsProduct").getFullList();
-    return await Promise.all(
-      customers.map(async (customer) => {
+
+    return (
+      customers.map((customer) => {
         // Extract data from model into an object
         const customerData = {
           user: customer.user,
@@ -114,13 +117,13 @@ async function Customers({customers, pb, ...props}: {customers: RecordModel[], p
         const interestsCategoryRaw = interestsCategoryAll.filter(interest => interest.customer === customer.id)
         const interestsProductRaw = interestsProductsAll.filter(interest => interest.customer === customer.id)
   
-        // Transform interestsCategoryRaw into a dictionary { categoryId: interest }
+        // Rename fields in the records to beter reflect contents
         const interestsCategory: interestsCategory[] = interestsCategoryRaw.map(record => ({
           categoryID: record.category,
           interest: record.interest
         }));
   
-        // Transform interestsProductRaw into a dictionary { productId: interest }
+        // Rename fields in the records to beter reflect contents
         const interestsProduct: interestsProduct[] = interestsProductRaw.map(record => ({
           productID: record.product,
           interest: record.interest

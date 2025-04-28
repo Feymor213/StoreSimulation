@@ -13,7 +13,7 @@ const execute = promisify(execFile);
 export async function RunSimulation(data: NewSimDataShort) {
   try {
   const pb = new PocketBase("http://127.0.0.1:8090");
-  await pb.collection("_superusers").authWithPassword("admin@admin.com", "adminadmin");
+  await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
   const user = await getAuthenticatedUser();
   if (!user) throw new Error("User authentication failed");

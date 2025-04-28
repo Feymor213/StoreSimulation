@@ -3,7 +3,7 @@ import PocketBase from "pocketbase";
 
 export async function POST(req: NextRequest) {
     const pb = new PocketBase("http://127.0.0.1:8090/");
-    await pb.collection("_superusers").authWithPassword("admin@admin.com", "adminadmin");
+    await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
     const { email, password, passwordConfirm, username } = await req.json();
 

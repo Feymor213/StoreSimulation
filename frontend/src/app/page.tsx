@@ -1,4 +1,4 @@
-import { getAuthenticatedUser } from "@/lib/auth";
+import React from "react";
 import HomePage from "./homepage";
 
 export default async function Home() {

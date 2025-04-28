@@ -66,6 +66,8 @@ export interface Calendar {
   deviations: Record<string, Record<string, number>>
 }
 
+export type ParameterDeleteAsync = (id: string) => Promise<{success: boolean}>;
+
 export interface SimOutputData {
   timesVisited: number,
   transactions: number,
@@ -75,7 +77,7 @@ export interface SimOutputData {
   opCosts: number,
   checkoutOutput: Record<string, CheckoutOutputData>,
   productOutput: Record<string, ProductOutputData>,
-  customerTypeOutput: Reocrd<string, CustomerOutputData>
+  customerTypeOutput: Record<string, CustomerOutputData>
 }
 export interface CheckoutOutputData {
   profits: number,

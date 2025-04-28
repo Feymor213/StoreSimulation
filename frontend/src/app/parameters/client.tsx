@@ -1,5 +1,6 @@
 'use client';
 
+import React from "react"; 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
@@ -8,9 +9,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,  } from
 import { useForm } from "react-hook-form";
 import { RecordModel } from "pocketbase";
 import { GoTrash } from "react-icons/go";
-import { CreateCategory, DeleteCategory, CreateProduct, CreateCheckoutType } from './serveractions';
+import { CreateCategory, CreateProduct, CreateCheckoutType } from './serveractions';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { ParameterDeleteAsync } from "@/lib/types";
 
 export function LoginText() {
   const router = useRouter();
@@ -69,7 +71,7 @@ export function CreateCategoryForm({ ...props }) {
     </Form>
   );
 }
-export function DeleteCategoryButton({id, inactive=false, ...props}: {id: string, inactive: boolean}) {
+export function DeleteButton({id, callback, inactive=false, ...props}: {id: string, callback: ParameterDeleteAsync, inactive?: boolean}) {
   if (inactive) return <GoTrash size={20} className='text-gray-300' />
 
   const router = useRouter();
@@ -78,7 +80,7 @@ export function DeleteCategoryButton({id, inactive=false, ...props}: {id: string
       className='cursor-pointer hover:text-red-400'
       size={20}
       onClick={() => {
-        DeleteCategory(id);
+        callback(id);
         router.refresh();
       }}/>
   )
