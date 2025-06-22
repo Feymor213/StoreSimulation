@@ -1,19 +1,27 @@
 import { cookies } from "next/headers";
-import PocketBase from "pocketbase";
+import PocketBase, { AuthRecord, ClientResponseError } from "pocketbase";
 
-export async function getAuthenticatedUser() {
+export async function getAuthenticatedUser(): Promise<AuthRecord | null> {
+
+    /**
+     * This function retrieves the authenticated user from PocketBase.
+     * It uses the auth token stored in cookies to authenticate the user.
+     * 
+     * If the token is valid, it returns the user object.
+     * Otherwise, it returns null.
+     * 
+     * @throws {ClientResponseError}
+     */
+
     const pb = new PocketBase("http://127.0.0.1:8090");
     const cookieStore = await cookies(); // Get auth token from cookies
     const authCookie = cookieStore.get("pb_auth")?.value;
 
     if (!authCookie) return null; // No token, user is not authenticated
 
-    try {
-        pb.authStore.save(authCookie, null);
-        await pb.collection("users").authRefresh();
+    // Retrieve the user using the auth token
+    pb.authStore.save(authCookie, null);
+    await pb.collection("users").authRefresh();
 
-        return pb.authStore.record; // Returns the user object
-    } catch (error) {
-        return null; // Invalid token, user is not authenticated
-    }
+    return pb.authStore.record; // Returns the user object
 }
