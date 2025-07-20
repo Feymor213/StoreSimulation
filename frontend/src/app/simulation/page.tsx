@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PocketBase, { RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from '@/lib/auth';
 import Link from 'next/link';
-import { NoSimScreen } from './client';
+import { Button } from '@/components/ui/button';
 
 export default async function SimulationsDisplay() {
   const pb = new PocketBase("http://127.0.0.1:8090");
   await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
   const user = await getAuthenticatedUser();
-  if (!user) throw new Error("User authentication failed");
 
-  const simulations = await pb.collection("SimData").getFullList({
-    filter: `user = "${user.id}"`
-  });
+  let simulations: RecordModel[] = [];
 
-  if (simulations.length === 0) {
+  if (user) {
+    simulations = await pb.collection("SimData").getFullList({
+      filter: `user = "${user.id}"`
+    });
+  }
+
+  if (simulations.length === 0 && user) {
     return (
       <NoSimScreen />
     )
@@ -24,6 +27,16 @@ export default async function SimulationsDisplay() {
   return (
     <div className="grid grid-cols-4 gap-2">
       {simulations.map((data, key) => SimulationRecord(data, key))}
+    </div>
+  )
+}
+
+export function NoSimScreen() {
+
+  return (
+    <div>
+      <h1>No simulations to show</h1>
+      <Link href='/create'><Button>Create new</Button></Link>
     </div>
   )
 }

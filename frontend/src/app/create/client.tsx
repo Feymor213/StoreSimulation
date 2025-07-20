@@ -9,7 +9,7 @@ import { RecordModel } from "pocketbase";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { RunSimulation } from "./serveractions";
+import { RunSimulation } from "@/serveractions/simulations";
 import { useRouter } from "next/navigation";
 
 export default function CreateSimForm({products, customers, checkouts, ...props}: {products: RecordModel[], customers: RecordModel[], checkouts: RecordModel[]}) {

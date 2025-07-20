@@ -99,3 +99,9 @@ export interface CustomerOutputData {
   totalTimeInStore: number,
   totalProfit: number,
 }
+
+export interface StandardAPIResponse {
+  success: boolean,
+  message: string,
+  [key: string]: any;
+}
