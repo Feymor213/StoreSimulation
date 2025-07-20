@@ -10,7 +10,7 @@ export default [
     extends: ['next'],
     rules: {
       'react/no-unescaped-entities': 'off',
-      '@next/next/no-page-custom-font': 'off',
+      '@next/next/no-page-custom-font': 'on',
     },
     plugins: {
       '@typescript-eslint': tseslint.ESLintESLintPlugin,
