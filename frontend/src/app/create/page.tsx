@@ -1,34 +1,109 @@
 import React from 'react';
 import CreateSimForm from "./client";
-import PocketBase from 'pocketbase';
+import Create, { CustomerType, Product, ProductCategory, Template, Checkout } from './client-2';
+import PocketBase, { AuthModel, RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from "@/lib/auth";
+import { notFound } from 'next/navigation';
 
-export default async function CreateSim() {
+interface TemplateRaw {
+  id: string,
+  name: string,
+  description: string,
+  products: string[],
+  categories: string[],
+  customerTypes: string[],
+  checkoutTypes: string[]
+}
+
+export default async function CreateSim({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+
+  const { id } = await searchParams;
+
+  let Fulltemplate = {};
+
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return notFound();
+  };
+
+  const template = await GetFullTemplate(user, id)
+
+  
+
+  return (
+    <div className="">
+      <Create template={template} />
+
+    </div>
+  )
+}
+
+const GetFullTemplate = async (user: AuthModel, templateId: string | undefined): Promise<Template> => {
+
+  if (!templateId) {
+    return {
+      id: "",
+      name: "",
+      description: "",
+      products: [],
+      categories: [],
+      customerTypes: [],
+      checkoutTypes: []
+    }
+  }
 
   const pb = new PocketBase("http://127.0.0.1:8090");
   await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
-  const user = await getAuthenticatedUser();
+  let templateRaw: TemplateRaw = {
+      id: "",
+      name: "",
+      description: "",
+      products: [],
+      categories: [],
+      customerTypes: [],
+      checkoutTypes: []
+    };
 
-  const categories = await pb.collection("Categories").getFullList({
-    filter: user ? `user = "${user.id}" || default = true` : `default = true`,
-  });
+  try {
+    // Fetch the raw template
+    templateRaw = await pb.collection("Templates").getOne(templateId) as TemplateRaw;
+  } catch {
+    return {
+      id: "",
+      name: "",
+      description: "",
+      products: [],
+      categories: [],
+      customerTypes: [],
+      checkoutTypes: []
+    }
+  }
 
-  const products = await pb.collection("Products").getFullList({
-    filter: user ? `user = "${user.id}" || default = true` : `default = true`,
-  });
+  // Helper to fetch objects by IDs
+  async function fetchObjects(collection: string, ids: string[]): Promise<any[]> {
+    if (!ids.length) return [];
+    // PocketBase doesn't support batch get by IDs, so fetch all and filter
+    const all = await pb.collection(collection).getFullList({ filter: `user = "${user!.id}" || default = true` });
+    return all.filter((obj: any) => ids.includes(obj.id)) as RecordModel[];
+  }
 
-  const customers = await pb.collection("CustomerTypes").getFullList({
-    filter: user ? `user = "${user.id}" || default = true` : `default = true`,
-  });
+  const products = await fetchObjects("Products", templateRaw.products) as Product[];
+  const categories = await fetchObjects("Categories", templateRaw.categories) as ProductCategory[];
+  const customerTypes = await fetchObjects("CustomerTypes", templateRaw.customerTypes) as CustomerType[];
+  const checkoutTypes = await fetchObjects("CheckoutTypes", templateRaw.checkoutTypes) as Checkout[];
 
-  const checkouts = await pb.collection("CheckoutTypes").getFullList({
-    filter: user ? `user = "${user.id}" || default = true` : `default = true`,
-  });
-
-  return (
-    <div className="w-full h-full">
-      <CreateSimForm products={products} customers={customers} checkouts={checkouts} />
-    </div>
-  )
+  return {
+    id: templateId,
+    name: templateRaw.name,
+    description: templateRaw.description,
+    products,
+    categories,
+    customerTypes,
+    checkoutTypes
+  };
 }

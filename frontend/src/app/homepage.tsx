@@ -15,7 +15,7 @@ export default function HomePage() {
 
   return (
   <main className="flex h-screen flex-col gap-4 justify-center items-center">
-    <h1 className="text-center text-4xl font-bold">Nothing's here yet.<br></br>Check out the header menu.</h1>
+    {/* <h1 className="text-center text-4xl font-bold">Nothing's here yet.<br></br>Check out the header menu.</h1> */}
   </main>
   )
 }

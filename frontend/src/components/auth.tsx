@@ -7,6 +7,26 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { useRouter } from "next/navigation";
 import { Register, Logout, Login } from "@/serveractions/auth";
 import Link from "next/link";
+import z from 'zod'
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import { toast } from "sonner";
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1, "Password is required"),
+});
+
+const registerSchema = z.object({
+  email: z.string().email(),
+  username: z.string().min(3, "Username must be at least 2 characters"),
+  password: z.string().min(6, "Password must be at least 8 characters"),
+  passwordConfirm: z.string(),
+}).refine((data) => data.password === data.passwordConfirm, {
+  message: "Passwords do not match",
+  path: ["passwordConfirm"],
+});
 
 function LoginForm({formSwitchHandler, ...props}: 
   {formSwitchHandler: Dispatch<SetStateAction<"login" | "register">>} 
@@ -14,15 +34,20 @@ function LoginForm({formSwitchHandler, ...props}:
 ) {
   
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: ""
+    },
+  });
 
-    const res = await Login(email, password);
+  const handleSubmit = async (values: z.infer<typeof loginSchema>) => {
+
+    const res = await Login(values.email, values.password);
 
     router.refresh();
     if (res.success) setSuccess(true);
@@ -30,12 +55,12 @@ function LoginForm({formSwitchHandler, ...props}:
   };
 
   if (success) {
-    return (
-      <div className='bg-green-100 flex flex-col gap-8 px-32 py-16 rounded-sm'>
-        <h3 className="text-xl"><strong>Login successful!</strong></h3>
-        <Link href='/'><Button>To Home</Button></Link>
-      </div>
-    )
+    // router.refresh();
+  }
+
+  if (failure) {
+    toast("Wrong credentials!");
+    // router.refresh();
   }
 
   return (
@@ -45,35 +70,40 @@ function LoginForm({formSwitchHandler, ...props}:
         <CardTitle>Log into your account</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-full" action="/login">
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={`p-2 border ${failure ? "border border-red-500" : ""}`}
-              autoComplete="email"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col space-y-4 w-full">
+
+            <FormField 
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="email" onChange={(e) => field.onChange(e.target.value)} />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-            {failure && <p className='text-xs pl-1 text-red-500'>Invalid credentials</p>}
-          </div>
-          <div>
-          <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={`p-2 border ${failure ? "border border-red-500" : ""}`}
-              autoComplete="current-password"
+
+            <FormField 
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" onChange={(e) => field.onChange(e.target.value)} />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-            {failure && <p className='text-xs pl-1 text-red-500'>Invalid credentials</p>}
-          </div>
-          <Button type="submit" className="">
-            Login
-          </Button>
-        </form>
+            
+            <Button type="submit" className="">
+              Login
+            </Button>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter>
         <span className="text-sm">
@@ -92,35 +122,35 @@ function RegisterForm({formSwitchHandler, ...props}:
 ) {
 
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      passwordConfirm: ""
+    },
+  });
 
-    const res = await Register(email, username, password, passwordConfirm);
+  const handleSubmit = async (values: z.infer<typeof registerSchema>) => {
 
-    if (res.success) {
-      setSuccess(true);
-    } else {
-      setFailure(true);
-    }
-
-    setMessage(res.message);
+    const res = await Register(values.email, values.username, values.password, values.passwordConfirm);
+    
+    router.refresh();
+    if (res.success) setSuccess(true);
+    else setFailure(true);
   };
 
   if (success) {
-    return (
-      <div className="bg-green-100 flex flex-col gap-8 px-32 py-16 rounded-sm">
-        <h3 className="text-xl"><strong>Registration successful!</strong></h3>
-        <Link href='/login'><Button>Go to Login</Button></Link>
-      </div>
-    );
+    // router.refresh();
+  }
+
+  if (failure) {
+    toast("Registration failed! Try another email.");
+    // router.refresh();
   }
 
   return (
@@ -129,59 +159,74 @@ function RegisterForm({formSwitchHandler, ...props}:
         <CardHeader>
           <CardTitle>Create a new account</CardTitle>
         </CardHeader>
-        <CardContent> 
-          <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-full" action="/register">
-            <div>
-              <Input
-                type="email"
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col space-y-4 w-full">
+              {/* <div>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className={`p-2 border ${failure ? "border-red-500" : ""}`}
+                  autoComplete="email"
+                  id="email"
+                />
+              </div> */}
+              <FormField 
+                control={form.control}
                 name="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className={`p-2 border ${failure ? "border-red-500" : ""}`}
-                autoComplete="email"
-                id="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="email" onChange={(e) => field.onChange(e.target.value)} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <Input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                className={`p-2 border ${failure ? "border-red-500" : ""}`}
-                autoComplete="off"
+              <FormField 
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="text" onChange={(e) => field.onChange(e.target.value)} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <Input
-                type="password"
+              <FormField 
+                control={form.control}
                 name="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className={`p-2 border ${failure ? "border-red-500" : ""}`}
-                autoComplete="new-password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="password" onChange={(e) => field.onChange(e.target.value)} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <Input
-                type="password"
-                name="confirm-password"
-                placeholder="Confirm Password"
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                required
-                className={`p-2 border ${failure ? "border-red-500" : ""}`}
-                autoComplete="new-password"
+              <FormField 
+                control={form.control}
+                name="passwordConfirm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="password" onChange={(e) => field.onChange(e.target.value)} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button type="submit">Register</Button>
-            {failure && <p className="text-xs pl-1 text-red-500">{message || "Registration failed"}</p>}
-          </form>
+
+              <Button type="submit">Register</Button>
+            </form>
+          </Form>
         </CardContent>
         <CardFooter>
         <span className="text-sm">

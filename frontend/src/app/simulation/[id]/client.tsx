@@ -1,0 +1,368 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
+import Footer from "@/components/Footer";
+import { AuthModel } from "pocketbase";
+
+// Mock data - in a real app, this would come from an API
+const mockSimulationData = {
+  timesVisited: 163,
+  transactions: 161,
+  productsPurchased: 505,
+  totalTimeInStore: 1853,
+  profits: 93660,
+  opCosts: 9600,
+  checkoutOutput: {
+    "1": {
+      profits: 62260,
+      technicalCost: 1600,
+      humanCost: 1600,
+      transactions: 105
+    },
+    "2": {
+      profits: 23900,
+      technicalCost: 1600,
+      humanCost: 1600,
+      transactions: 43
+    },
+    "3": {
+      profits: 7500,
+      technicalCost: 1600,
+      humanCost: 1600,
+      transactions: 13
+    }
+  },
+  productOutput: {
+    "1": {
+      name: "apple",
+      price: 90,
+      amountSold: 0,
+      soldByShoppingList: 0,
+      soldByImpulse: 0
+    },
+    "2": {
+      name: "orange",
+      price: 100,
+      amountSold: 76,
+      soldByShoppingList: 67,
+      soldByImpulse: 9
+    },
+    "3": {
+      name: "milk",
+      price: 150,
+      amountSold: 116,
+      soldByShoppingList: 98,
+      soldByImpulse: 18
+    },
+    "4": {
+      name: "pork",
+      price: 250,
+      amountSold: 107,
+      soldByShoppingList: 89,
+      soldByImpulse: 18
+    },
+    "5": {
+      name: "beef",
+      price: 300,
+      amountSold: 103,
+      soldByShoppingList: 83,
+      soldByImpulse: 20
+    },
+    "6": {
+      name: "tea",
+      price: 120,
+      amountSold: 51,
+      soldByShoppingList: 41,
+      soldByImpulse: 10
+    },
+    "7": {
+      name: "coffee",
+      price: 140,
+      amountSold: 55,
+      soldByShoppingList: 47,
+      soldByImpulse: 8
+    }
+  },
+  customerTypeOutput: {
+    "1": {
+      visits: 70,
+      transactions: 69,
+      totalProductsPurchased: 232,
+      totalTimeInStore: 777,
+      totalProfit: 44670
+    },
+    "2": {
+      visits: 93,
+      transactions: 92,
+      totalProductsPurchased: 273,
+      totalTimeInStore: 1083,
+      totalProfit: 48990
+    }
+  }
+};
+
+const SimulationResults = async ({ id, user }: { id: string, user: AuthModel }) => {
+  const data = mockSimulationData;
+
+  // Calculate derived metrics
+  const avgItemsInCart = data.productsPurchased / data.transactions;
+  const avgTimeInStore = data.totalTimeInStore / data.timesVisited;
+  const avgItemPrice = data.profits / data.productsPurchased;
+  const totalRevenue = data.profits;
+  const totalExpenses = data.opCosts;
+  const numCheckouts = Object.keys(data.checkoutOutput).length;
+
+  const formatCurrency = (value: number) => `$${(value / 100).toFixed(2)}`;
+  const formatTime = (minutes: number) => `${minutes.toFixed(1)} min`;
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* <Header loggedIn={} /> */}
+      
+      <main className="flex-1 container mx-auto px-4 py-8 mt-20">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Simulation Results #{id}
+          </h1>
+          <p className="text-muted-foreground">
+            Detailed analytics and performance metrics for your store simulation
+          </p>
+        </div>
+
+        {/* Overall Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Customers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.timesVisited}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.transactions}</div>
+              <p className="text-xs text-muted-foreground">
+                {((data.transactions / data.timesVisited) * 100).toFixed(1)}% conversion rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Items per Cart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{avgItemsInCart.toFixed(1)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Time in Store</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatTime(avgTimeInStore)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Items Purchased</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.productsPurchased}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Item Price</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(avgItemPrice)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Number of Checkouts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{numCheckouts}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Net Profit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue - totalExpenses)}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Separator className="my-8" />
+
+        {/* Customer Types Analysis */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Customer Types Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer Type</TableHead>
+                  <TableHead>Visits</TableHead>
+                  <TableHead>Transactions</TableHead>
+                  <TableHead>Avg Items per Cart</TableHead>
+                  <TableHead>Avg Time in Store</TableHead>
+                  <TableHead>Total Items Purchased</TableHead>
+                  <TableHead>Avg Item Price</TableHead>
+                  <TableHead>Total Revenue</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(data.customerTypeOutput).map(([typeId, typeData]) => {
+                  const avgItemsPerCart = typeData.totalProductsPurchased / typeData.transactions;
+                  const avgTimePerCustomer = typeData.totalTimeInStore / typeData.visits;
+                  const avgItemPriceForType = typeData.totalProfit / typeData.totalProductsPurchased;
+                  
+                  return (
+                    <TableRow key={typeId}>
+                      <TableCell>
+                        <Badge variant="secondary">Type {typeId}</Badge>
+                      </TableCell>
+                      <TableCell>{typeData.visits}</TableCell>
+                      <TableCell>{typeData.transactions}</TableCell>
+                      <TableCell>{avgItemsPerCart.toFixed(1)}</TableCell>
+                      <TableCell>{formatTime(avgTimePerCustomer)}</TableCell>
+                      <TableCell>{typeData.totalProductsPurchased}</TableCell>
+                      <TableCell>{formatCurrency(avgItemPriceForType)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(typeData.totalProfit)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Checkout Analysis */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Checkout Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Checkout #</TableHead>
+                  <TableHead>Total Revenue</TableHead>
+                  <TableHead>Technical Maintenance</TableHead>
+                  <TableHead>Labor Expenses</TableHead>
+                  <TableHead>Customers Served</TableHead>
+                  <TableHead>Net Profit</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(data.checkoutOutput).map(([checkoutId, checkoutData]) => {
+                  const netProfit = checkoutData.profits - checkoutData.technicalCost - checkoutData.humanCost;
+                  
+                  return (
+                    <TableRow key={checkoutId}>
+                      <TableCell>
+                        <Badge variant="outline">#{checkoutId}</Badge>
+                      </TableCell>
+                      <TableCell>{formatCurrency(checkoutData.profits)}</TableCell>
+                      <TableCell className="text-destructive">{formatCurrency(checkoutData.technicalCost)}</TableCell>
+                      <TableCell className="text-destructive">{formatCurrency(checkoutData.humanCost)}</TableCell>
+                      <TableCell>{checkoutData.transactions}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(netProfit)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Product Analysis */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Product Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Items Sold</TableHead>
+                  <TableHead>Shopping List</TableHead>
+                  <TableHead>Impulse Purchases</TableHead>
+                  <TableHead>Total Revenue</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(data.productOutput).map(([productId, productData]) => {
+                  const totalRevenue = productData.amountSold * productData.price;
+                  const impulsePercentage = productData.amountSold > 0 
+                    ? (productData.soldByImpulse / productData.amountSold * 100).toFixed(1)
+                    : "0";
+                  
+                  return (
+                    <TableRow key={productId}>
+                      <TableCell className="font-medium capitalize">{productData.name}</TableCell>
+                      <TableCell>{formatCurrency(productData.price)}</TableCell>
+                      <TableCell>{productData.amountSold}</TableCell>
+                      <TableCell>{productData.soldByShoppingList}</TableCell>
+                      <TableCell>
+                        {productData.soldByImpulse}
+                        <span className="text-muted-foreground text-sm ml-1">
+                          ({impulsePercentage}%)
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(totalRevenue)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default SimulationResults;

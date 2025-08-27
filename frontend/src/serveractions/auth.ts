@@ -20,6 +20,8 @@ async function Register(email: string, name: string, password: string, passwordC
   try {
     const newUser = await pb.collection("users").create(data);
 
+    Login(email, password);
+
     return {success: true, message: "Registration successful", user: newUser }
   } catch (error: any) {
     console.error(error);

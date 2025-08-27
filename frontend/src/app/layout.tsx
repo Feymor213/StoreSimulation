@@ -1,7 +1,8 @@
 import React from 'react';
 import "./globals.css";
-import Header from "./header";
+import Header from "@/components/Header";
 import { getAuthenticatedUser } from "@/lib/auth";
+import Footer from '@/components/Footer';
 
 export default function RootLayout({
   children,
@@ -17,11 +18,13 @@ export default function RootLayout({
 
 async function Layout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser();
+  const loggedIn = !!user;
 
   return (
     <>
-      <Header user={user} />
-      <main className="p-6 flex-1">{children}</main>
+      <Header loggedIn={loggedIn} />
+      <main>{children}</main>
+      <Footer />
     </>
   );
 }
