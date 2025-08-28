@@ -144,7 +144,7 @@ export default function Create({template}: {template: Template}) {
     },
   });
 
-  const itemForm = useForm<z.infer<typeof productSchema>>({
+  const productForm = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
   });
 
@@ -182,11 +182,11 @@ export default function Create({template}: {template: Template}) {
       customerForm.reset({
         name: "",
         description: "",
-        categoryInterests: Object.fromEntries(categories.map(c => [c.id, 50])),
-        productInterests: Object.fromEntries(products.map(p => [p.id, 50])),
+        categoryInterests: Object.fromEntries(categories.map(c => [c.id, 0.5])),
+        productInterests: Object.fromEntries(products.map(p => [p.id, 0.5])),
       });
     } else {
-      itemForm.reset();
+      productForm.reset();
     }
   };
 
@@ -196,11 +196,11 @@ export default function Create({template}: {template: Template}) {
     if (type === "customer") {
       customerForm.reset({
         ...item,
-        categoryInterests: item.categoryInterests || Object.fromEntries(categories.map(c => [c.id, 50])),
-        productInterests: item.productInterests || Object.fromEntries(products.map(p => [p.id, 50])),
+        categoryInterests: item.categoryInterests || Object.fromEntries(categories.map(c => [c.id, 0.5])),
+        productInterests: item.productInterests || Object.fromEntries(products.map(p => [p.id, 0.5])),
       });
     } else {
-      itemForm.reset(item);
+      productForm.reset(item);
     }
   };
 
@@ -493,15 +493,15 @@ export default function Create({template}: {template: Template}) {
                             <FormLabel className="flex justify-between">
                               {category.name}
                               <span className="text-sm text-muted-foreground">
-                                {field.value || 50}%
+                                {Math.floor(field.value*100) || 0}%
                               </span>
                             </FormLabel>
                             <FormControl>
                               <Slider
                                 min={0}
-                                max={100}
-                                step={5}
-                                value={[field.value || 50]}
+                                max={1}
+                                step={0.01}
+                                value={[field.value]}
                                 onValueChange={(values) => field.onChange(values[0])}
                               />
                             </FormControl>
@@ -527,15 +527,15 @@ export default function Create({template}: {template: Template}) {
                               <FormLabel className="flex justify-between">
                                 {product.name}
                                 <span className="text-sm text-muted-foreground">
-                                  {field.value || 50}%
+                                  {Math.floor(field.value*100) || 0}%
                                 </span>
                               </FormLabel>
                               <FormControl>
                                 <Slider
                                   min={0}
-                                  max={100}
-                                  step={5}
-                                  value={[field.value || 50]}
+                                  max={1}
+                                  step={0.01}
+                                  value={[field.value]}
                                   onValueChange={(values) => field.onChange(values[0])}
                                 />
                               </FormControl>
@@ -559,10 +559,10 @@ export default function Create({template}: {template: Template}) {
               </form>
             </Form>
           ) : (
-            <Form {...itemForm}>
-              <form onSubmit={itemForm.handleSubmit(onItemSubmit)} className="space-y-4">
+            <Form {...productForm}>
+              <form onSubmit={productForm.handleSubmit(onItemSubmit)} className="space-y-4">
                 <FormField
-                  control={itemForm.control}
+                  control={productForm.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
@@ -575,7 +575,7 @@ export default function Create({template}: {template: Template}) {
                   )}
                 />
                 <FormField
-                  control={itemForm.control}
+                  control={productForm.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
@@ -590,7 +590,7 @@ export default function Create({template}: {template: Template}) {
                 {dialogType === "product" && (
                   <>
                     <FormField
-                      control={itemForm.control}
+                      control={productForm.control}
                       name="category"
                       render={({ field }) => (
                         <FormItem>
@@ -614,7 +614,7 @@ export default function Create({template}: {template: Template}) {
                       )}
                     />
                     <FormField
-                      control={itemForm.control}
+                      control={productForm.control}
                       name="price"
                       render={({ field }) => (
                         <FormItem>

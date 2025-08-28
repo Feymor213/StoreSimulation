@@ -1,5 +1,4 @@
 import React from 'react';
-import CreateSimForm from "./client";
 import Create, { CustomerType, Product, ProductCategory, Template, Checkout } from './client-2';
 import PocketBase, { AuthModel, RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from "@/lib/auth";
