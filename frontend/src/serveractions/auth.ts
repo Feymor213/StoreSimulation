@@ -2,6 +2,7 @@
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { StandardAPIResponse } from '@/lib/types';
+import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
 import PocketBase from "pocketbase";
 
@@ -20,8 +21,6 @@ async function Register(email: string, name: string, password: string, passwordC
   try {
     const newUser = await pb.collection("users").create(data);
 
-    Login(email, password);
-
     return {success: true, message: "Registration successful", user: newUser }
   } catch (error: any) {
     console.error(error);
@@ -38,13 +37,7 @@ async function Login(email: string, password: string): Promise<StandardAPIRespon
 
     const token = authData.token;
 
-    // Set secure HTTP-only cookie
-    cookieStorage.set("pb_auth", token, {
-      httpOnly: true, // Prevent client-side JavaScript access
-      secure: process.env.NODE_ENV === "production", // Secure only in production
-      sameSite: "strict", // Prevent CSRF
-      maxAge: 60 * 60 * 24, // 1 day expiry
-    });
+    SetCookies(cookieStorage, token);
 
     return {success: true, message: "Login successful"};
   }
@@ -118,6 +111,16 @@ async function UpdateUserPassword(password: string, passwordConfirm: string): Pr
     console.error(error);
     return {success: false, message: "Password update failed"};
   }  
+}
+
+function SetCookies(cookieStorage: ReadonlyRequestCookies, token: string) {
+  // Set secure HTTP-only cookie
+    cookieStorage.set("pb_auth", token, {
+      httpOnly: true, // Prevent client-side JavaScript access
+      secure: process.env.NODE_ENV === "production", // Secure only in production
+      sameSite: "strict", // Prevent CSRF
+      maxAge: 60 * 60 * 24, // 1 day expiry
+    });
 }
 
 export { Register, Login, Logout, UpdateUser, UpdateUserPassword };

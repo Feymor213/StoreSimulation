@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ShoppingBag } from "lucide-react";
-import { AuthRecord } from "pocketbase";
 import { useState } from "react";
 import { DialogHeader } from "./ui/dialog";
 import { LoginForm, RegisterForm } from "./auth";
@@ -14,15 +13,15 @@ import Link from "next/link";
 
 const Header = ({loggedIn}: {loggedIn: boolean}) => {
 
+  const [activeForm, setActiveForm] = useState<'login' | 'register'>('login');
+
   const router = useRouter();
 
   const handleLogout = async () => {
     const data = await Logout();
     if (data.success) {
-      router.refresh();
     } else {
       toast("Logout failed. Please try again later");
-      router.refresh();
     }
   }
 
@@ -49,9 +48,24 @@ const Header = ({loggedIn}: {loggedIn: boolean}) => {
           {!loggedIn && 
             <div className="flex items-center space-x-4">
               <Dialog>
-                <DialogTrigger asChild><Button variant='outline'>Sign In</Button></DialogTrigger>
-                <DialogTrigger asChild><Button variant='default'>Get Started</Button></DialogTrigger>
-                <LoginDialogContent />
+                <DialogTrigger asChild><Button variant='outline' onClick={() => {setActiveForm('login')}}>Sign In</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant='default' onClick={() => {setActiveForm('register')}}>Get Started</Button></DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sign up or create a new account</DialogTitle>
+                  </DialogHeader>
+                  <div className="overflow-hidden w-full relative">
+                    <div
+                      className="flex transition-transform duration-500 ease-in-out w-[200%]"
+                      style={{
+                        transform: activeForm === 'login' ? 'translateX(0%)' : 'translateX(-50%)',
+                      }}
+                    >
+                      <LoginForm formSwitchHandler={setActiveForm} className="w-full" />
+                      <RegisterForm formSwitchHandler={setActiveForm} className="w-full" />
+                    </div>
+                  </div>
+                </DialogContent>
               </Dialog>
             </div>
           }
@@ -65,29 +79,5 @@ const Header = ({loggedIn}: {loggedIn: boolean}) => {
     </header>
   );
 };
-
-function LoginDialogContent() {
-
-  const [activeForm, setActiveForm] = useState<'login' | 'register'>('login');
-  
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Sign up or create a new account</DialogTitle>
-      </DialogHeader>
-      <div className="overflow-hidden w-full relative">
-        <div
-          className="flex transition-transform duration-500 ease-in-out w-[200%]"
-          style={{
-            transform: activeForm === 'login' ? 'translateX(0%)' : 'translateX(-50%)',
-          }}
-        >
-          <LoginForm formSwitchHandler={setActiveForm} className="w-full" />
-          <RegisterForm formSwitchHandler={setActiveForm} className="w-full" />
-        </div>
-      </div>
-    </DialogContent>
-  )
-}
 
 export default Header;

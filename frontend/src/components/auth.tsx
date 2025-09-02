@@ -49,13 +49,13 @@ function LoginForm({formSwitchHandler, ...props}:
 
     const res = await Login(values.email, values.password);
 
-    router.refresh();
     if (res.success) setSuccess(true);
     else setFailure(true);
   };
 
   if (success) {
     // router.refresh();
+    toast("Successfully logged in!");
   }
 
   if (failure) {
@@ -126,7 +126,7 @@ function RegisterForm({formSwitchHandler, ...props}:
   const [failure, setFailure] = useState(false);
 
   const form = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       username: "",
@@ -137,6 +137,8 @@ function RegisterForm({formSwitchHandler, ...props}:
 
   const handleSubmit = async (values: z.infer<typeof registerSchema>) => {
 
+    console.log(values);
+
     const res = await Register(values.email, values.username, values.password, values.passwordConfirm);
     
     router.refresh();
@@ -144,15 +146,19 @@ function RegisterForm({formSwitchHandler, ...props}:
     else setFailure(true);
   };
 
-  if (success) {
-    // router.refresh();
-  }
-
-  if (failure) {
-    toast("Registration failed! Try another email.");
-    // router.refresh();
-  }
-
+  useEffect(() => {
+    if (success) {
+      console.log("Registered successfully");
+      router.refresh();
+      toast("Registered successfully.");
+    }
+    if (failure) {
+      console.log("Registration failed! Try another email.")
+      toast("Registration failed! Try another email.");
+      router.refresh();
+    }
+  }, [success]);
+  
   return (
     <div {...props}>
       <Card className="w-full h-full flex flex-col justify-center items-center"> 
@@ -162,19 +168,6 @@ function RegisterForm({formSwitchHandler, ...props}:
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col space-y-4 w-full">
-              {/* <div>
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className={`p-2 border ${failure ? "border-red-500" : ""}`}
-                  autoComplete="email"
-                  id="email"
-                />
-              </div> */}
               <FormField 
                 control={form.control}
                 name="email"
@@ -239,53 +232,4 @@ function RegisterForm({formSwitchHandler, ...props}:
   );
 }
 
-function LogoutPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  const handleLogout = async () => {
-    const res = await Logout();
-    console.log(res.success)
-    if (res.success) {
-      document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"; // Manually remove the cookie on the client side
-    }
-    else {
-      setError(true);
-    }
-    
-    router.refresh();
-    setLoading(false);
-  };
-
-  // Logout the user immediately when the page is opened
-  useEffect(() => {
-    handleLogout();
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="w-full h-screen flex justify-center">
-        <span>Logging you out</span>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="w-full h-screen flex justify-center items-start">
-        <span className="p-3 bg-red-300 border border-red-500 rounded-md">An error occurred while logging out. Please try again.</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-col gap-4 items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold mb-4">You have been logged out</h1>
-      <Button onClick={() => {router.push("/")}} className="text-base px-12">Home</Button>
-      <Button onClick={() => {router.push("/login")}} className="text-base px-12">Login</Button>
-    </div>
-  );
-}
-
-export { RegisterForm, LogoutPage, LoginForm };
+export { RegisterForm, LoginForm };
