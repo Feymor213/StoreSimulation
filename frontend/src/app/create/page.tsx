@@ -1,5 +1,5 @@
 import React from 'react';
-import Create, { CustomerType, Product, ProductCategory, Template, Checkout } from './client-2';
+import Create, { CustomerType, Product, ProductCategory, Template, Checkout } from './client';
 import PocketBase, { AuthModel, RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from "@/lib/auth";
 import { notFound } from 'next/navigation';
