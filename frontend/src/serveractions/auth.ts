@@ -29,7 +29,7 @@ async function Register(email: string, name: string, password: string, passwordC
 }
 
 async function Login(email: string, password: string): Promise<StandardAPIResponse> {
-  const pb = new PocketBase("http://127.0.0.1:8090");
+  const pb = new PocketBase(process.env.POCKETBASE_URL!);
   const cookieStorage = await cookies();
 
   try {
@@ -68,7 +68,7 @@ async function UpdateUser(email: string, name: string): Promise<StandardAPIRespo
     return {success: false, message: "User not authenticated"};
   }
 
-  const pb = new PocketBase("http://127.0.0.1:8090");
+  const pb = new PocketBase(process.env.POCKETBASE_URL!);
   try{
     await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
@@ -96,7 +96,7 @@ async function UpdateUserPassword(password: string, passwordConfirm: string): Pr
     return {success: false, message: "User not authenticated"};
   }
 
-  const pb = new PocketBase("http://127.0.0.1:8090");
+  const pb = new PocketBase(process.env.POCKETBASE_URL!);
   try{
     await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 

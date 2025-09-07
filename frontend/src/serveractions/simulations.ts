@@ -12,7 +12,7 @@ import { promisify } from "util";
 
 export async function RunSimulation(data: NewSimDataShort) {
   try {
-  const pb = new PocketBase("http://127.0.0.1:8090");
+  const pb = new PocketBase(process.env.POCKETBASE_URL!);
   await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
   const user = await getAuthenticatedUser();
