@@ -1,0 +1,74 @@
+import { NewSimDataFull } from "@/lib/types/simulation";
+import { RunSimulationExecutable } from "../lib/tmp";
+
+const simData: NewSimDataFull = {
+  "days": 2,
+  "customersPerHour": 10,
+  "products": [
+    {"id": "1", "name": "apple",  "price":  90},
+    {"id": "2", "name": "orange", "price": 100},
+    {"id": "3", "name": "milk",   "price": 150},
+    {"id": "4", "name": "pork",   "price": 250},
+    {"id": "5", "name": "beef",   "price": 300},
+    {"id": "6", "name": "tea",    "price": 120},
+    {"id": "7", "name": "coffee", "price": 140}
+  ],
+  "customers": [
+    {
+      "id": "1",
+      "name": "man",
+      "frequency": 0.4,
+      "impulsivity": 0.3,
+      "patience": 40,
+      "interests": {
+        "1": 0.1,
+        "2": 0.2,
+        "3": 0.7,
+        "4": 0.5,
+        "5": 0.6,
+        "6": 0.3,
+        "7": 0.2
+      }
+    },
+    {
+      "id": "2",
+      "name": "woman",
+      "frequency": 0.6,
+      "impulsivity": 0.1,
+      "patience": 100,
+      "interests": {
+        "1": 0.3,
+        "2": 0.5,
+        "3": 0.5,
+        "4": 0.7,
+        "5": 0.5,
+        "6": 0.4,
+        "7": 0.4
+      }
+    }
+  ],
+  "checkouts": [
+    {"id": "1", "capacity": 10, "humanCost": 100, "technicalCost": 100},
+    {"id": "2", "capacity": 10, "humanCost": 100, "technicalCost": 100},
+    {"id": "3", "capacity": 10, "humanCost": 100, "technicalCost": 100}
+  ],
+  "calendar": {
+    "deviations": { "0": {"1": 0}, "1": {"1": 0, "4": 0.9, "6": 0.6} }
+  }
+}
+
+
+describe("Simulation start test suite", () => {
+  it("Test running the executable", async () => {
+    const result = RunSimulationExecutable(simData);
+    console.log("started", Date.now());
+
+    await result.then((res) => {
+      console.log("finished", Date.now());
+      console.log(res);
+    });
+
+    expect(result).toBeDefined();
+    console.log(result);
+  });
+});

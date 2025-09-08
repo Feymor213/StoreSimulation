@@ -1,7 +1,7 @@
 'use server'
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { StandardAPIResponse } from '@/lib/types';
+import { StandardAPIResponse } from '@/lib/types/types';
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
 import PocketBase from "pocketbase";

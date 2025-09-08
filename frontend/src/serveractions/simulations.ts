@@ -1,6 +1,6 @@
 'use server';
 
-import { Calendar, CheckoutTypeFull, CustomerTypeFull, NewSimDataFull, NewSimDataShort, ProductFull } from "@/lib/types"
+import { Calendar, CheckoutTypeFull, CustomerTypeFull, NewSimDataFull, NewSimDataShort, ProductFull } from "@/lib/types/simulation"
 import { getAuthenticatedUser } from "@/lib/auth";
 import { FormatSimulationInput } from "@/lib/simulationUtils";
 import PocketBase, { RecordModel } from 'pocketbase'
@@ -36,7 +36,7 @@ export async function RunSimulation(data: NewSimDataShort) {
   }
 }
 
-async function RunSimulationExecutable(data: NewSimDataFull) {
+export async function RunSimulationExecutable(data: NewSimDataFull) {
 
   const inputJson = JSON.stringify(data);
 
