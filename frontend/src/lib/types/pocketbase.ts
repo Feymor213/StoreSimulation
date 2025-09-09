@@ -61,3 +61,13 @@ export interface CheckoutType extends RecordModel {
   technicalCost: number,
   user: string | null,
 }
+
+export interface Template extends RecordModel {
+  id: string,
+  name: string,
+  description: string,
+  products: string[],
+  categories: string[],
+  customerTypes: string[],
+  checkoutTypes: string[]
+}

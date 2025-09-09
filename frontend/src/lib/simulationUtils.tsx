@@ -1,5 +1,5 @@
 import { getAuthenticatedUser } from "./auth";
-import { Calendar, CheckoutTypeFull, CustomerTypeFull, NewSimDataFull, NewSimDataShort, ProductFull } from "./types";
+import { Calendar, CheckoutTypeFull, CustomerTypeFull, NewSimDataFull, NewSimDataShort, ProductFull } from "./types/simulation";
 import PocketBase, { RecordModel } from 'pocketbase'
 
 

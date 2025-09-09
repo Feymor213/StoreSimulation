@@ -23,6 +23,12 @@ const simulationSchema = z.object({
   description: z.string().optional(),
   days: z.number().min(1, "Must be at least 1 day").max(365, "Maximum 365 days"),
   customersPerHour: z.number().min(1, "Must be at least 1 customer per hour").max(1000, "Maximum 1000 customers per hour"),
+  products: z.array(z.string()).min(1, "At least one product is required"),
+  customers: z.array(z.object({
+    customerID: z.string(),
+    frequency: z.number().min(0).max(1)
+  })).min(1, "At least one customer type is required"),
+  checkouts: z.array(z.string()).min(1, "At least one checkout is required"),
 });
 
 const productSchema = z.object({

@@ -3,16 +3,7 @@ import Create, { CustomerType, Product, ProductCategory, Template, Checkout } fr
 import PocketBase, { AuthModel, RecordModel } from 'pocketbase';
 import { getAuthenticatedUser } from "@/lib/auth";
 import { notFound } from 'next/navigation';
-
-interface TemplateRaw {
-  id: string,
-  name: string,
-  description: string,
-  products: string[],
-  categories: string[],
-  customerTypes: string[],
-  checkoutTypes: string[]
-}
+import { Template as TemplateRaw } from '@/lib/types/pocketbase';
 
 export default async function CreateSim({
   searchParams,
@@ -59,6 +50,8 @@ const GetFullTemplate = async (user: AuthModel, templateId: string | undefined):
   await pb.collection("_superusers").authWithPassword(process.env.POCKETBASE_SUPERUSER_EMAIL!, process.env.POCKETBASE_SUPERUSER_PASSWORD!);
 
   let templateRaw: TemplateRaw = {
+      collectionId: "",
+      collectionName: "",
       id: "",
       name: "",
       description: "",
