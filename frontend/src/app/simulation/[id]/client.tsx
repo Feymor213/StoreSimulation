@@ -4,106 +4,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/Footer";
 import { AuthModel } from "pocketbase";
+import { SimulationOutputData } from "@/lib/types/simulation";
+import { Simulation } from "@/lib/types/pocketbase";
 
-// Mock data - in a real app, this would come from an API
-const mockSimulationData = {
-  timesVisited: 163,
-  transactions: 161,
-  productsPurchased: 505,
-  totalTimeInStore: 1853,
-  profits: 93660,
-  opCosts: 9600,
-  checkoutOutput: {
-    "1": {
-      profits: 62260,
-      technicalCost: 1600,
-      humanCost: 1600,
-      transactions: 105
-    },
-    "2": {
-      profits: 23900,
-      technicalCost: 1600,
-      humanCost: 1600,
-      transactions: 43
-    },
-    "3": {
-      profits: 7500,
-      technicalCost: 1600,
-      humanCost: 1600,
-      transactions: 13
-    }
-  },
-  productOutput: {
-    "1": {
-      name: "apple",
-      price: 90,
-      amountSold: 0,
-      soldByShoppingList: 0,
-      soldByImpulse: 0
-    },
-    "2": {
-      name: "orange",
-      price: 100,
-      amountSold: 76,
-      soldByShoppingList: 67,
-      soldByImpulse: 9
-    },
-    "3": {
-      name: "milk",
-      price: 150,
-      amountSold: 116,
-      soldByShoppingList: 98,
-      soldByImpulse: 18
-    },
-    "4": {
-      name: "pork",
-      price: 250,
-      amountSold: 107,
-      soldByShoppingList: 89,
-      soldByImpulse: 18
-    },
-    "5": {
-      name: "beef",
-      price: 300,
-      amountSold: 103,
-      soldByShoppingList: 83,
-      soldByImpulse: 20
-    },
-    "6": {
-      name: "tea",
-      price: 120,
-      amountSold: 51,
-      soldByShoppingList: 41,
-      soldByImpulse: 10
-    },
-    "7": {
-      name: "coffee",
-      price: 140,
-      amountSold: 55,
-      soldByShoppingList: 47,
-      soldByImpulse: 8
-    }
-  },
-  customerTypeOutput: {
-    "1": {
-      visits: 70,
-      transactions: 69,
-      totalProductsPurchased: 232,
-      totalTimeInStore: 777,
-      totalProfit: 44670
-    },
-    "2": {
-      visits: 93,
-      transactions: 92,
-      totalProductsPurchased: 273,
-      totalTimeInStore: 1083,
-      totalProfit: 48990
-    }
+const SimulationResults = async ({ id, user, simulation }: { id: string, user: AuthModel, simulation: Simulation }) => {
+  if (!simulation.outputData) {
+    return <div>No output data available for this simulation.</div>;
   }
-};
-
-const SimulationResults = async ({ id, user }: { id: string, user: AuthModel }) => {
-  const data = mockSimulationData;
+  const data = JSON.parse(simulation.outputData) as SimulationOutputData;
 
   // Calculate derived metrics
   const avgItemsInCart = data.productsPurchased / data.transactions;
@@ -123,10 +31,10 @@ const SimulationResults = async ({ id, user }: { id: string, user: AuthModel }) 
       <main className="flex-1 container mx-auto px-4 py-8 mt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Simulation Results #{id}
+            Simulation Results of {simulation.name}
           </h1>
           <p className="text-muted-foreground">
-            Detailed analytics and performance metrics for your store simulation
+            {simulation.description}
           </p>
         </div>
 
@@ -359,8 +267,6 @@ const SimulationResults = async ({ id, user }: { id: string, user: AuthModel }) 
           </CardContent>
         </Card>
       </main>
-
-      <Footer />
     </div>
   );
 };

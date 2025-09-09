@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SimulationsGrid from '@/components/SimulationsGrid';
 import { notFound } from 'next/navigation';
+import { PocketbaseGetAll } from '@/lib/pocketbase';
+import { Simulation } from '@/lib/types/pocketbase';
 
 export default async function SimulationsDisplay() {
   const pb = new PocketBase(process.env.POCKETBASE_URL!);
@@ -17,10 +19,10 @@ export default async function SimulationsDisplay() {
 
   const loggedIn = !!user;
 
-  let simulations: RecordModel[] = [];
+  let simulations: Simulation[] = [];
 
   if (user) {
-    simulations = await pb.collection("SimData").getFullList({
+    simulations = await PocketbaseGetAll('Simulations', {
       filter: `user = "${user.id}"`
     });
   }
@@ -35,7 +37,7 @@ export default async function SimulationsDisplay() {
     // <div className="grid grid-cols-4 gap-2">
     //   {simulations.map((data, key) => SimulationRecord(data, key))}
     // </div>
-    <SimulationsGrid loggedIn={loggedIn} />
+    <SimulationsGrid loggedIn={loggedIn} simulations={simulations} limit={Infinity} />
   )
 }
 

@@ -39,3 +39,41 @@ export interface NewSimDataShort {
   }>,
   checkouts: string[],
 }
+
+export interface SimulationOutputData {
+  timesVisited: number;
+  transactions: number;
+  productsPurchased: number;
+  totalTimeInStore: number;
+  profits: number;
+  opCosts: number;
+
+  checkoutOutput: {
+    [key: string]: {
+      profits: number;
+      technicalCost: number;
+      humanCost: number;
+      transactions: number;
+    };
+  };
+
+  productOutput: {
+    [key: string]: {
+      name: string;
+      price: number;
+      amountSold: number;
+      soldByShoppingList: number;
+      soldByImpulse: number;
+    };
+  };
+
+  customerTypeOutput: {
+    [key: string]: {
+      visits: number;
+      transactions: number;
+      totalProductsPurchased: number;
+      totalTimeInStore: number;
+      totalProfit: number;
+    };
+  };
+}

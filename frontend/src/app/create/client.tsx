@@ -17,6 +17,7 @@ import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { RunSimulation } from "@/serveractions/simulations";
 import { useRouter } from "next/navigation";
+import { NewSimDataShort } from "@/lib/types/simulation";
 
 const simulationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -433,7 +434,7 @@ export default function Create({template}: {template: Template}) {
           {renderItemsList(checkouts, "checkout", "Checkouts")}
 
           <div className="flex justify-end">
-            <Button onClick={form.handleSubmit(onSubmit)} size="lg">
+            <Button onClick={() => RunSimulation({} as NewSimDataShort)} size="lg">
               Create Simulation
             </Button>
           </div>

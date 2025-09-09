@@ -1,6 +1,7 @@
 import { RecordModel } from "pocketbase";
+import { NewSimDataFull, SimulationOutputData } from "./simulation";
 
-export type PocketbaseCollection = 'Categories' | 'Products'| "CustomerTypes" | "CheckoutTypes" | "interestsProduct" | "interestsCategory";
+export type PocketbaseCollection = 'Categories' | 'Products'| "CustomerTypes" | "CheckoutTypes" | "interestsProduct" | "interestsCategory" | "Templates" | 'Simulations';
 
 // Maps collection names to their types
 // This is used to automatically determine the return type of functions in frontend/src/lib/pocketbase.ts
@@ -11,6 +12,8 @@ export type CollectionMap = {
   CheckoutTypes: CheckoutType;
   interestsProduct: ProductInterest;
   interestsCategory: CategoryInterest;
+  Templates: Template;
+  Simulations: Simulation;
 };
 
 export interface Category extends RecordModel {
@@ -70,4 +73,14 @@ export interface Template extends RecordModel {
   categories: string[],
   customerTypes: string[],
   checkoutTypes: string[]
+}
+
+export interface Simulation extends RecordModel {
+  id: string,
+  name: string,
+  description: string,
+  user: string,
+  inputData?: string | null,
+  outputData?: string | null,
+  state: 'running' | 'finished' | 'failed',
 }
